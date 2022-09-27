@@ -1,6 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
+const mongoose = require("mongoose");
 
 const app = express();
 
@@ -9,6 +10,17 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({
     extended: true
 }));
+
+mongoose.connect("mongodb://localhost:27017/userDB");
+
+// Creating a userSchema
+const userSchema = new mongoose.Schema({
+    email: String,
+    password: String
+});
+
+// Creating a model User with userSchema
+const User = mongoose.model("User", userSchema);
 
 app.get("/", (req, res) => {
     res.render("home");
@@ -20,6 +32,22 @@ app.get("/login", (req, res) => {
 
 app.get("/register", (req, res) => {
     res.render("register");
+});
+
+app.post("/register", (req, res) => {
+    // creating a new user
+    const newUser = {
+        email: req.body.email,
+        password: req.body.password
+    };
+
+    newUser.save((err) => {
+        if (err) {
+            console.log(err);
+        } else {
+            res.render("secrets");
+        }
+    });
 });
 
 
