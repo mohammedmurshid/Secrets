@@ -3,12 +3,10 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const mongoose = require("mongoose");
-const md5 = require("md5");
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
 
 const app = express();
-
-// trying to log the hash key
-console.log(md5("123456"));
 
 // logging the API Key which is saved in .env file
 console.log(process.env.API_KEY);
@@ -44,35 +42,38 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-    // creating a new user
-    const newUser = new User({
-        email: req.body.username,
-        password: md5(req.body.password)
-    });
-    
-    newUser.save((err) => {
-        if (err) {
-            console.log(err);
-        } else {
-            res.render("secrets");
-        }
-    });
 
-    // console.log(req.body.email);
+    bcrypt.hash(req.body.password, saltRounds, function (err, hash) {
+        // creating a new user
+        const newUser = new User({
+            email: req.body.username,
+            password: hash
+        });
+
+        newUser.save((err) => {
+            if (err) {
+                console.log(err);
+            } else {
+                res.render("secrets");
+            }
+        });
+    });
 });
 
 app.post("/login", (req, res) => {
     const username = req.body.username;
-    const password = md5(req.body.password);
+    const password = req.body.password;
 
-    User.findOne({email: username}, (err, foundUser) => {
+    User.findOne({ email: username }, (err, foundUser) => {
         if (err) {
             console.log(err);
         } else {
             if (foundUser) {
-                if (foundUser.password === password){
-                    res.render("secrets");
-                }
+                bcrypt.compare(password, foundUser.password, (err, result) => {
+                    if (result === true) {
+                        res.render("secrets");
+                    }
+                });
             }
         }
     });
