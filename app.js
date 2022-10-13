@@ -67,10 +67,6 @@ app.get("/", (req, res) => {
 
 });
 
-app.get("/test",function(req,res){
-    res.render("secrets2")
-})
-
 app.get("/login", (req, res) => {
     if (req.isAuthenticated()) {
         res.redirect("/secrets")
