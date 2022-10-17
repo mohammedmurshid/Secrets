@@ -140,7 +140,7 @@ app.get("/admin", function (req, res) {
         }
         else (res.redirect("/"))
     } else {
-        req.flash("adminMessage","Your not authorized")
+        req.flash("adminMessage","You are not authorized")
         res.redirect("/");
     }
 
